@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import connectionPool from "./utils/db.mjs";
+import validateCreatePostData from "./middlewares/post.validation.mjs";
 
 const app = express();
 const port = process.env.PORT || 4001;
@@ -17,7 +18,7 @@ app.get("/profiles", (reg, res) => {
   });
 });
 
-app.post("/assignments", async (req, res) => {
+app.post("/posts", [validateCreatePostData], async (req, res) => {
   const newPost = {
     ...req.body,
     date: new Date(), // ใส่วันที่ปัจจุบันในฟิลด์ date
@@ -54,9 +55,10 @@ app.post("/assignments", async (req, res) => {
     return res.status(201).json({
       message: "Create post successfully",
     });
-  } catch {
+  } catch (error) {
     return res.status(500).json({
       message: "Server could not create post because database connection",
+      error: error.message,
     });
   }
 });
@@ -85,7 +87,7 @@ app.get("/posts/:postId", async (req, res) => {
   }
 });
 
-app.put("/posts/:postId", async (req, res) => {
+app.put("/posts/:postId", [validateCreatePostData], async (req, res) => {
   try {
     const postIdFromClient = req.params.postId;
     const updatePost = { ...req.body };
